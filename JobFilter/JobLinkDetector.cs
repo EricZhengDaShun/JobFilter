@@ -27,7 +27,7 @@ namespace JobFilter
                      where node.Name == "a" &&
                      node.Attributes["href"] != null &&
                      node.Attributes["class"]?.Value == "js-job-link "
-                     select node.Attributes["href"].Value).ToList();
+                     select "https:" + node.Attributes["href"].Value).ToList();
 
             return links;
         }

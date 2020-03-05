@@ -1,64 +1,64 @@
-﻿using HtmlAgilityPack;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace JobFilter
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            string url = "https://www.104.com.tw/jobs/search/?ro=0&jobcat=2007001000&kwop=7&keyword=c%2B%2B&area=6001001000&order=15&asc=0&page=2&mode=s&jobsource=2018indexpoc";
-
-            HtmlFetcher htmlFetcher = new HtmlFetcher
+            var configLoader = new ConfigLoader()
             {
-                Url = url
-            };
-            Task<bool> isSuccessful = htmlFetcher.Fetch();
-            isSuccessful.Wait();
-            if (!isSuccessful.Result)
-            {
-                Console.WriteLine(htmlFetcher.Info);
-                Console.ReadKey();
-                return;
-            }
-            
-            using (StreamWriter wr = File.CreateText("1.html"))
-            {
-                wr.Write(htmlFetcher.Html);
-            }
-
-            JobLinkDetector jobLinkDetector = new JobLinkDetector()
-            {
-                Html = htmlFetcher.Html
+                FileName = "setting.json"
             };
 
-            var links = jobLinkDetector.Detect();
-            /*
-            HtmlDocument resultat = new HtmlDocument();
-            resultat.LoadHtml(htmlFetcher.Html);
-            List<HtmlNode> toftitle = resultat.DocumentNode.Descendants().Where(
-                x => (x.Name == "div" &&
-                x.Attributes["id"]?.Value == "js-job-content")).ToList();
-
-            if (toftitle.Count != 1)
+            if (!configLoader.Load())
             {
-                Console.WriteLine("Parse fail !");
+                Console.WriteLine("Load setting file fail !");
+                Console.WriteLine(configLoader.Info);
                 Console.ReadKey();
                 return;
             }
 
-            var jobsNode = toftitle[0];
-            var l = (from node in jobsNode.Descendants()
-                      where node.Name == "a" &&
-                      node.Attributes["href"] != null &&
-                      node.Attributes["class"]?.Value == "js-job-link "
-                      select node.Attributes["href"].Value).ToList();  
-            */
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
+            var jobLinks = new List<string>();
+            var htmlFetcher = new HtmlFetcher();
+            var jobLinkDetector = new JobLinkDetector();
+            foreach (var serachJobLink in configLoader.SearchJobResults)
+            {
+                htmlFetcher.Url = serachJobLink;
+                bool isSuccess = await htmlFetcher.Fetch();
+                if (!isSuccess) continue;
+                jobLinkDetector.Html = htmlFetcher.Html;
+                jobLinks.AddRange(jobLinkDetector.Detect());
+            }
+
+            var jobFilter = new JobFilter()
+            {
+                IncludeTools = configLoader.IncludeTool,
+                ExcludeTools = configLoader.ExcludeTool
+            };
+
+            var result = new List<string>();
+            foreach (var jobLink in jobLinks)
+            {
+                jobFilter.Url = jobLink;
+                if (jobFilter.IsPass())
+                {
+                    result.Add(jobLink);
+                    result.AddRange(jobFilter.Tools);
+                }
+            }
+
+            stopwatch.Stop();
+            File.WriteAllLines("result.txt", result);
+            Console.WriteLine("Done !");
+            Console.WriteLine("Spend {0} s", stopwatch.Elapsed.TotalSeconds);
             Console.ReadKey();
         }
     }

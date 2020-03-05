@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Net.Http;
+using PuppeteerSharp;
 using System.Threading.Tasks;
 
 namespace JobFilter
 {
     public class HtmlFetcher
     {
-        public string Info { get; set; }
+        public string Info { get; private set; }
         public string Url { get; set; }
-        public string Html { get; set; }
-
-        private HttpClient client = new HttpClient();
+        public string Html { get; private set; }
 
         public async Task<bool> Fetch()
         {
@@ -20,18 +18,23 @@ namespace JobFilter
             bool isSuccess = false;
             try
             {
-                HttpResponseMessage response = await client.GetAsync(Url);
-                response.EnsureSuccessStatusCode();
-                Html = await response.Content.ReadAsStringAsync();
-                isSuccess = true;
+                await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
+                using (var browser = await Puppeteer.LaunchAsync(new LaunchOptions()
+                {
+                    Headless = true
+                }))
+                {
+                    using (var page = await browser.NewPageAsync())
+                    {
+                        await page.GoToAsync(Url);
+                        Html = await page.GetContentAsync();
+                        isSuccess = true;
+                    }
+                }
             }
-            catch (HttpRequestException e)
+            catch (Exception ex)
             {
-                Info = e.Message;
-            }
-            catch (Exception e)
-            {
-                Info = e.Message;
+                Info = ex.Message;
             }
             return isSuccess;
         }
