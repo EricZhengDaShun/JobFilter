@@ -19,18 +19,14 @@ namespace JobFilter
             try
             {
                 await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-                using (var browser = await Puppeteer.LaunchAsync(new LaunchOptions()
+                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions()
                 {
                     Headless = true
-                }))
-                {
-                    using (var page = await browser.NewPageAsync())
-                    {
-                        await page.GoToAsync(Url);
-                        Html = await page.GetContentAsync();
-                        isSuccess = true;
-                    }
-                }
+                });
+                using var page = await browser.NewPageAsync();
+                await page.GoToAsync(Url);
+                Html = await page.GetContentAsync();
+                isSuccess = true;
             }
             catch (Exception ex)
             {

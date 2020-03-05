@@ -2,18 +2,68 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace JobFilter
 {
     class Program
     {
+        private static readonly object lockResultObject = new object();
+        private static readonly List<string> result = new List<string>();
+        private static readonly ConfigLoader configLoader = new ConfigLoader()
+        {
+            FileName = "setting.json"
+        };
+
+        private static async Task GetJobLinks(string link)
+        {
+            var htmlFetcher = new HtmlFetcher();
+            var jobLinkDetector = new JobLinkDetector();
+            htmlFetcher.Url = link;
+            bool isSuccess = await htmlFetcher.Fetch();
+            if (!isSuccess) return;
+            jobLinkDetector.Html = htmlFetcher.Html;
+            List<string> jogLinks = jobLinkDetector.Detect();
+
+            var taskList = new List<Task>();
+            foreach (var jogLink in jogLinks)
+            {
+                taskList.Add(Task.Run(() => CheckJob(jogLink)));
+            }
+            await Task.WhenAll(taskList);
+            return;
+        }
+
+        private static void CheckJob(string link)
+        {
+            var jobFilter = new JobFilter()
+            {
+                IncludeTools = configLoader.IncludeTool,
+                ExcludeTools = configLoader.ExcludeTool
+            };
+
+            jobFilter.Url = link;
+            if (jobFilter.IsPass())
+            {
+                lock (lockResultObject)
+                {
+                    result.AddRange(jobFilter.Tools);
+                    result.Add(link);
+                }
+            }
+
+            return;
+        }
+
         static async Task Main(string[] args)
         {
-            var configLoader = new ConfigLoader()
+            if (!ThreadPool.SetMinThreads(70, 70))
             {
-                FileName = "setting.json"
-            };
+                Console.WriteLine("SetMinThreads fail !");
+                Console.ReadKey();
+                return;
+            }
 
             if (!configLoader.Load())
             {
@@ -26,34 +76,12 @@ namespace JobFilter
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var jobLinks = new List<string>();
-            var htmlFetcher = new HtmlFetcher();
-            var jobLinkDetector = new JobLinkDetector();
+            var getJobListTasks = new List<Task>();
             foreach (var serachJobLink in configLoader.SearchJobResults)
             {
-                htmlFetcher.Url = serachJobLink;
-                bool isSuccess = await htmlFetcher.Fetch();
-                if (!isSuccess) continue;
-                jobLinkDetector.Html = htmlFetcher.Html;
-                jobLinks.AddRange(jobLinkDetector.Detect());
+                getJobListTasks.Add(GetJobLinks(serachJobLink));
             }
-
-            var jobFilter = new JobFilter()
-            {
-                IncludeTools = configLoader.IncludeTool,
-                ExcludeTools = configLoader.ExcludeTool
-            };
-
-            var result = new List<string>();
-            foreach (var jobLink in jobLinks)
-            {
-                jobFilter.Url = jobLink;
-                if (jobFilter.IsPass())
-                {
-                    result.Add(jobLink);
-                    result.AddRange(jobFilter.Tools);
-                }
-            }
+            await Task.WhenAll(getJobListTasks);
 
             stopwatch.Stop();
             File.WriteAllLines("result.txt", result);
