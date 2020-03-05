@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace JobFilter
@@ -27,27 +28,8 @@ namespace JobFilter
 
             toolDetector.Html = htmlFetcher.Html;
             List<string> tools = toolDetector.Detect();
-            bool found = true;
-            foreach (var tool in IncludeTools)
-            {
-                if (!tools.Contains(tool))
-                {
-                    found = false;
-                    break;
-                }
-            }
-            if (!found) return false;
-
-            found = false;
-            foreach (var tool in ExcludeTools)
-            {
-                if (tools.Contains(tool))
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (found) return false;
+            if (!IncludeTools.All(x => (tools.Contains(x)))) return false;
+            if (!ExcludeTools.Any(x => (!tools.Contains(x)))) return false;
 
             Tools = tools;
             return true;
