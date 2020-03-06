@@ -27,7 +27,7 @@ namespace JobFilter
             toolDetector.Html = htmlFetcher.Html;
             List<string> tools = toolDetector.Detect();
             if (!IncludeTools.All(x => (tools.Contains(x)))) return false;
-            if (!ExcludeTools.Any(x => (!tools.Contains(x)))) return false;
+            if (!ExcludeTools.All(x => (!tools.Contains(x)))) return false;
 
             Tools = tools;
             return true;
