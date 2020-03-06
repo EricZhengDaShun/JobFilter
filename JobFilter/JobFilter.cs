@@ -22,9 +22,8 @@ namespace JobFilter
         {
             Tools.Clear();
 
-            Task<bool> isSuccessful = htmlFetcher.Fetch();
-            if (!isSuccessful.IsCompleted) isSuccessful.Wait();
-            if (!isSuccessful.Result) return false;
+            bool isSuccessful = htmlFetcher.Fetch();
+            if (!isSuccessful) return false;
 
             toolDetector.Html = htmlFetcher.Html;
             List<string> tools = toolDetector.Detect();

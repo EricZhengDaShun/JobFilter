@@ -1,6 +1,6 @@
 ﻿using System;
-using PuppeteerSharp;
-using System.Threading.Tasks;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 
 namespace JobFilter
 {
@@ -10,7 +10,7 @@ namespace JobFilter
         public string Url { get; set; }
         public string Html { get; private set; }
 
-        public async Task<bool> Fetch()
+        public bool Fetch()
         {
             Info = "";
             Html = "";
@@ -18,14 +18,13 @@ namespace JobFilter
             bool isSuccess = false;
             try
             {
-                await new BrowserFetcher().DownloadAsync(BrowserFetcher.DefaultRevision);
-                using var browser = await Puppeteer.LaunchAsync(new LaunchOptions()
-                {
-                    Headless = true
-                });
-                using var page = await browser.NewPageAsync();
-                await page.GoToAsync(Url);
-                Html = await page.GetContentAsync();
+                var chromeOptions = new ChromeOptions();
+                chromeOptions.AddArguments("headless");
+                IWebDriver driver = new ChromeDriver(chromeOptions);
+                driver.Navigate().GoToUrl(Url);
+                Html = driver.PageSource;
+                driver.Close();
+                driver.Quit();
                 isSuccess = true;
             }
             catch (Exception ex)

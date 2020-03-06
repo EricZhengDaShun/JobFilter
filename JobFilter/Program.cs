@@ -21,7 +21,7 @@ namespace JobFilter
             var htmlFetcher = new HtmlFetcher();
             var jobLinkDetector = new JobLinkDetector();
             htmlFetcher.Url = link;
-            bool isSuccess = await htmlFetcher.Fetch();
+            bool isSuccess = htmlFetcher.Fetch();
             if (!isSuccess) return;
             jobLinkDetector.Html = htmlFetcher.Html;
             List<string> jogLinks = jobLinkDetector.Detect();
@@ -58,13 +58,6 @@ namespace JobFilter
 
         static async Task Main(string[] args)
         {
-            if (!ThreadPool.SetMinThreads(70, 70))
-            {
-                Console.WriteLine("SetMinThreads fail !");
-                Console.ReadKey();
-                return;
-            }
-
             if (!configLoader.Load())
             {
                 Console.WriteLine("Load setting file fail !");
