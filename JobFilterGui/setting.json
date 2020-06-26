@@ -1,0 +1,43 @@
+{
+  "Url": "https://www.104.com.tw/jobs/search/?ro=0&jobcat=2007001000&kwop=7&keyword=c&jobcatExpansionType=0&area=6001001000&edu=4&order=15&asc=0&page=1&mode=s&jobsource=2018indexpoc",
+  "PageNum": 1,
+  "IncludeTools": [
+    "C#"
+  ],
+  "ExcludeTools": [
+    "Firmware",
+    "Java",
+    "Assembly",
+    "PHP",
+    "MFC",
+    "JSP",
+    "HTML",
+    "JavaScript",
+    "MCU",
+    "Node.js",
+    "Android",
+    "Go",
+    "Objective-C"
+  ],
+  "JobLinkHtml": {
+    "Tag": "a",
+    "Attr": "class",
+    "AttrValue": "js-job-link ",
+    "Target": "href"
+  },
+  "ToolHtml": {
+    "Tag": "u",
+    "Attr": "data-v-cff81d40",
+    "AttrValue": ""
+  },
+  "JobTitle": {
+    "Tag": "h1",
+    "Attr": "class",
+    "AttrValue": "pr-6 text-break"
+  },
+  "Salary": {
+    "Tag": "p",
+    "Attr": "class",
+    "AttrValue": "t3 mb-0 mr-2 monthly-salary text-primary font-weight-bold float-left"
+  }
+}

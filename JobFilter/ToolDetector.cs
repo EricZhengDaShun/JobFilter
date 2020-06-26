@@ -16,7 +16,7 @@ namespace JobFilter
 
             List<string> tools = htmlDocument.DocumentNode.Descendants()
                 .Where(x => (x.Name == "u" && 
-                x.Attributes["data-v-617f74c5"] != null))
+                x.Attributes["data-v-cff81d40"] != null))
                 .Select(n => n.InnerText)
                 .ToList();
 
