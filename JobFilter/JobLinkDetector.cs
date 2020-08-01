@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
-using HtmlAgilityPack;
+﻿using HtmlAgilityPack;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace JobFilter
 {
@@ -24,10 +26,10 @@ namespace JobFilter
 
             var jobsNode = jobContents[0];
             List<string> links = (from node in jobsNode.Descendants()
-                     where node.Name == "a" &&
-                     node.Attributes["href"] != null &&
-                     node.Attributes["class"]?.Value == "js-job-link "
-                     select "https:" + node.Attributes["href"].Value).ToList();
+                                  where node.Name == "a" &&
+                                  node.Attributes["href"] != null &&
+                                  node.Attributes["class"]?.Value == "js-job-link "
+                                  select "https:" + node.Attributes["href"].Value).ToList();
 
             return links;
         }

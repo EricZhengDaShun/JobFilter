@@ -1,38 +1,32 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
 namespace JobFilter
 {
-    public class HtmlFetcher
+    public class HtmlFetcher : IDisposable
     {
-        public string Info { get; private set; }
-        public string Url { get; set; }
-        public string Html { get; private set; }
+        private readonly IWebDriver driver;
 
-        public bool Fetch()
+        public HtmlFetcher()
         {
-            Info = "";
-            Html = "";
-
-            bool isSuccess = false;
-            try
-            {
-                var chromeOptions = new ChromeOptions();
-                chromeOptions.AddArguments("headless");
-                IWebDriver driver = new ChromeDriver(chromeOptions);
-                driver.Navigate().GoToUrl(Url);
-                Html = driver.PageSource;
-                driver.Close();
-                driver.Quit();
-                isSuccess = true;
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-            }
-            return isSuccess;
+            ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.AddArguments("headless");
+            driver = new ChromeDriver(chromeOptions);
         }
 
+        public void Dispose()
+        {
+            driver.Close();
+            driver.Quit();
+        }
+
+        public string LoadUrl(string url)
+        {
+            driver.Navigate().GoToUrl(url);
+            return driver.PageSource;
+        }
     }
 }

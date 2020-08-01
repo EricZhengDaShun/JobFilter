@@ -1,6 +1,8 @@
 ﻿using HtmlAgilityPack;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace JobFilter
 {
@@ -15,8 +17,8 @@ namespace JobFilter
             htmlDocument.LoadHtml(Html);
 
             List<string> tools = htmlDocument.DocumentNode.Descendants()
-                .Where(x => (x.Name == "u" && 
-                x.Attributes["data-v-617f74c5"] != null))
+                .Where(x => (x.Name == "u" &&
+                x.Attributes["data-v-1ffbadf4"] != null))
                 .Select(n => n.InnerText)
                 .ToList();
 

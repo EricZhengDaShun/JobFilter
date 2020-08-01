@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace JobFilter
 {
@@ -44,7 +45,7 @@ namespace JobFilter
                 isSuccessful = false;
                 Info = ex.Message;
             }
-            
+
             return isSuccessful;
         }
     }
